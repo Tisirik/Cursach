@@ -5,11 +5,11 @@ from tkinter import *
 from tkinter.ttk import Combobox
 from tkinter import ttk
 from tkinter import messagebox
-from tkinter.ttk import Radiobutton 
+from tkinter.ttk import Radiobutton
 
 
 root = Tk()
-root.geometry('650x400')
+root.geometry('650x450')
 root.title("Калькулятор транспортного налога")
 root['bg'] = '#c7dcd0'
 root.resizable(width=False, height=False)
@@ -19,7 +19,34 @@ def create_window():
         year = year_choose.get()
         months = int(number_of_months_choose.get())
         vehicle_type = type_of_vehicle_choose.get()
-        power = float(txt_power.get())
+        try:
+            power = float(txt_power.get())
+        except ValueError:
+            messagebox.showerror("Ошибка", "Некорректный формат мощности!")
+            return
+
+        allowed_ranges = {
+            "Автомобили легковые": (0, 2000),
+            "Мотоциклы и мотороллеры": (0, 100),
+            "Автобусы": (0, 500),
+            "Автомобили грузовые": (0, 750),
+            "Другие самоходные транспортные средства": (0, 1000),
+            "Машины и механизмы на пневматическом и гусеничном ходу (с каждой лошадиной силы)": (0, 1000),
+            "Снегоходы, мотосани": (0, 500),
+            "Катера, моторные лодки и другие водные транспортные средства": (0, 500),
+            "Яхты и другие парусно-моторные суда": (0, 500),
+            "Несамоходные (буксируемые) суда": (0, 500),
+            "Самолеты, вертолеты и иные воздушные суда, имеющие двигатели (с каждой лошадиной силы)": (0, 1000),
+            "Самолеты с реактивными двигателями (с каждого килограмма силы тяги)": (0, 1000),
+            "Другие водные и воздушные транспортные средства без двигателей (с единицы транспортного средства)": (0, 1000),
+        }
+        min_power, max_power = allowed_ranges.get(vehicle_type, (0, float('inf')))
+
+        if not (min_power <= power <= max_power):
+            messagebox.showerror("Ошибка", f"Мощность вне допустимого диапазона для {vehicle_type} (от {min_power} до {max_power} л.с.)")
+            return
+
+
         expensive_car = expensive_car_var.get() if expensive_car_checkbutton.winfo_exists() else False
 
         if not all([year, months, vehicle_type, power]):
@@ -175,6 +202,7 @@ type_of_vehicle = Label(root, text="Выберите вид\n транспорт
 type_of_vehicle.grid(column=0, row=2, sticky=W)
 type_of_vehicle_choose = Combobox(root, state="readonly",)
 type_of_vehicle_choose['values'] = (
+    "           ",
     "Автомобили легковые",
     "Мотоциклы и мотороллеры",
     "Автобусы",
